@@ -8,10 +8,27 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+       
+          'custom-image': "url('/BlueBackGround.jpeg')",
       },
+
+      screens: {
+        // Define your custom screen sizes here
+        'small': '480px', // Custom small screen size
+        'medium': '768px', // Custom medium screen size (overwrites the default medium)
+        'large': '1024px', // Custom large screen size (matches the default large)
+      },
+
+      colors: {
+        // Define your custom colors here
+        'custom-blue': '#007bff', // Example custom color
+        'custom-red': '#ff073a', // Another example custom color
+        // Add as many as you need
+      },
+      borderRadius: {
+        '4xl': '2rem', // or any specific value you prefer
+      },
+
     },
   },
   plugins: [],
