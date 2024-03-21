@@ -1,5 +1,20 @@
 'use client'
 import React from 'react'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+
+const customMarkerIcon = L.icon({
+    iconUrl: '/red.png',
+    iconSize: [40, 41],
+    iconAnchor: [15, 41],
+    popupAnchor: [1, -34]
+  });;
+
+
+
+
 
 const Main = () => {
   const stores = [
@@ -12,6 +27,7 @@ const Main = () => {
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
 ];
+const position = [41.9028, 12.4964];
   return (
 
     <div className="min-h-[100vh] sm:w-[90%] md:w-[90%] lg:w-[80%] p-4 md:p-8">
@@ -24,22 +40,20 @@ const Main = () => {
             </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
             <div className="order-2 md:order-1">
-                <div className="relative mb-4 md:mb-0">
-                    <img src="https://placehold.co/600x550" alt="Map placeholder" className="rounded-lg w-full" />
-                    <div className="absolute bottom-0 left-0 bg-white p-4 rounded-lg m-4">
-                        <h2 className="font-semibold">Hardware Store</h2>
-                        <p className="text-sm">VIA TAL DEI TALI 69, 00100 - ROME</p>
-                        <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center">
-                                <i className="fas fa-map-marker-alt text-blue-500"></i>
-                                <span className="ml-2 text-sm">3.5KM</span>
-                            </div>
-                            <button className="bg-blue-500 text-white text-sm px-4 py-2 rounded">INDICATIONS</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <MapContainer center={position} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {stores.map((store, index) => (
+          <Marker key={index} position={position} icon={customMarkerIcon}>
+            <Popup>{store.name}<br />{store.address}</Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
             <div className="order-1 md:order-2">
                 <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
                     {stores.map((store, index) => (
