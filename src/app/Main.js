@@ -5,12 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
 
-const customMarkerIcon = L.icon({
-    iconUrl: '/red.png',
-    iconSize: [40, 41],
-    iconAnchor: [15, 41],
-    popupAnchor: [1, -34]
-  });;
 
 
 
@@ -27,6 +21,13 @@ const Main = () => {
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
 ];
+const customMarkerIcon = L.icon({
+  iconUrl: '/red.png',
+  iconSize: [40, 41],
+  iconAnchor: [15, 41],
+  popupAnchor: [1, -34]
+});;
+
 const position = [41.9028, 12.4964];
   return (
 
