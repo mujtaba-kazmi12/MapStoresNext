@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { useMap } from 'react-leaflet';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
   ssr: false,
@@ -22,12 +25,13 @@ const Main = () => {
   const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
   const position = [41.9028, 12.4964]; // Rome, Italy
   const [mapCenter, setMapCenter] = useState(position);
-  const [selectedStoreIndex, setSelectedStoreIndex] = useState(null);
+  const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  console.log(selectedStoreId)
   // Example store data
   const stores = [
-    { name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [41.9028, 12.4964] },
-    { name: 'New store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [47.9048, 12.4966] },
+    { id: 1, name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [41.9028, 12.4964] },
+    { id: 2, name: 'New store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [47.9048, 12.4966] },
     
     // Add more stores as needed
   ];
@@ -54,9 +58,10 @@ const Main = () => {
     return <div>Loading map...</div>;
   }
 
-  const handleStoreClick = (storePosition,index) => {
+  const handleStoreClick = (storePosition,storeId) => {
     setMapCenter(storePosition);
-    setSelectedStoreIndex(index);
+    setSelectedStoreId(storeId);
+    
   }
 
   const MapUpdater = ({ center }) => {
@@ -77,8 +82,21 @@ const Main = () => {
          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
              <h1 className="text-xl md:text-2xl font-semibold mb-4 md:mb-0">Store Locator</h1>
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                 <input className="border p-2 rounded w-full md:flex-1" placeholder="Search by store name" onChange={(e) => setSearchTerm(e.target.value)}/>
-                <button className="border p-2 rounded bg-blue-500 text-white w-full md:flex-1">SEARCH</button>
+                 {/* <input className="border p-2 rounded w-full md:flex-1" placeholder="Search by store name" onChange={(e) => setSearchTerm(e.target.value)}/> */}
+                 <TextField
+  className="w-full md:flex-1"
+  variant="outlined"
+  placeholder="Search by store name"
+  onChange={(e) => setSearchTerm(e.target.value)}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon />
+      </InputAdornment>
+    ),
+  }}
+/>               
+               
             </div>
         </div>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
@@ -88,8 +106,7 @@ const Main = () => {
              <MapUpdater center={mapCenter} />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
+  />
       {stores.map((store, index) => (
   <Marker key={index} position={store.position} icon={customMarkerIcon}>
     <Popup>
@@ -101,9 +118,9 @@ const Main = () => {
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
-                     {filteredStores.map((store, index) => (
-                        <div key={index} className={`bg-white p-4 rounded-lg shadow flex items-center justify-between cursor-pointer hover:bg-blue-100 ${selectedStoreIndex === index ? 'bg-blue-200' : 'hover:bg-blue-100'}`}  
-                        onClick={() => handleStoreClick(store.position,index)}>
+                     {filteredStores.map((store) => (
+                        <div  key={store.id} className={`bg-white p-4 rounded-lg shadow flex items-center justify-between cursor-pointer hover:bg-blue-100 ${selectedStoreId=== store.id ? 'bg-blue-100' : 'hover:bg-blue-100'}`}  
+                        onClick={() => handleStoreClick(store.position,store.id)}>
                              <div>
                                  <h3 className="font-semibold">{store.name}</h3>
                                  <p className="text-sm">{store.address}</p>
