@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-
+import { useMap } from 'react-leaflet';
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
   ssr: false,
@@ -20,22 +20,18 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), {
 const Main = () => {
   // State for the custom marker icon
   const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
-  
+  const position = [41.9028, 12.4964]; // Rome, Italy
+  const [mapCenter, setMapCenter] = useState(position);
   // Example store data
   const stores = [
-    { name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Store of hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'New store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Mega hardware store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Ferramenta Store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
-    { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
+    { name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [41.9028, 12.4964] },
+    { name: 'New store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [47.9048, 12.4966] },
+    
     // Add more stores as needed
   ];
 
   // Default map position (latitude, longitude)
-  const position = [41.9028, 12.4964]; // Rome, Italy
+ 
 
   useEffect(() => {
     // This check ensures that Leaflet is only initialized on the client side
@@ -56,6 +52,16 @@ const Main = () => {
     return <div>Loading map...</div>;
   }
 
+  const handleStoreClick = (storePosition) => {
+    setMapCenter(storePosition);
+  }
+
+  const MapUpdater = ({ center }) => {
+    const map = useMap();
+    map.flyTo(center);
+    return null;
+  };
+
   return (
    
    
@@ -73,24 +79,25 @@ const Main = () => {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
         
              <div className="order-2 md:order-1">
-             <MapContainer center={position} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
+             <MapContainer center={mapCenter} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
+             <MapUpdater center={mapCenter} />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {stores.map((store, index) => (
-        <Marker key={index} position={position} icon={customMarkerIcon}>
-          <Popup>
-            {store.name}<br />{store.address}
-          </Popup>
-        </Marker>
-      ))}
+  <Marker key={index} position={store.position} icon={customMarkerIcon}>
+    <Popup>
+      {store.name}<br />{store.address}
+    </Popup>
+  </Marker>
+))}
     </MapContainer>
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
                      {stores.map((store, index) => (
-                        <div key={index} className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
+                        <div key={index} className="bg-white p-4 rounded-lg shadow flex items-center justify-between"  onClick={() => handleStoreClick(store.position)}>
                              <div>
                                  <h3 className="font-semibold">{store.name}</h3>
                                  <p className="text-sm">{store.address}</p>
@@ -113,3 +120,6 @@ const Main = () => {
 }
 
 export default Main;
+
+
+
