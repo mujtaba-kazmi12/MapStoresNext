@@ -22,6 +22,8 @@ const Main = () => {
   const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
   const position = [41.9028, 12.4964]; // Rome, Italy
   const [mapCenter, setMapCenter] = useState(position);
+  const [selectedStoreIndex, setSelectedStoreIndex] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   // Example store data
   const stores = [
     { name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [41.9028, 12.4964] },
@@ -52,8 +54,9 @@ const Main = () => {
     return <div>Loading map...</div>;
   }
 
-  const handleStoreClick = (storePosition) => {
+  const handleStoreClick = (storePosition,index) => {
     setMapCenter(storePosition);
+    setSelectedStoreIndex(index);
   }
 
   const MapUpdater = ({ center }) => {
@@ -62,17 +65,19 @@ const Main = () => {
     return null;
   };
 
+  const filteredStores = searchTerm.trim()
+  ? stores.filter(store =>
+      store.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    )
+  : stores;
   return (
-   
-   
-
-
+ 
  <div className="min-h-[100vh] sm:w-[90%] md:w-[90%] lg:w-[80%] p-4 md:p-8">
      <div className="bg-white rounded-lg shadow-lg p-6">
          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
              <h1 className="text-xl md:text-2xl font-semibold mb-4 md:mb-0">Store Locator</h1>
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                 <input className="border p-2 rounded w-full md:flex-1" placeholder="Rome, RM, Italy" />
+                 <input className="border p-2 rounded w-full md:flex-1" placeholder="Search by store name" onChange={(e) => setSearchTerm(e.target.value)}/>
                 <button className="border p-2 rounded bg-blue-500 text-white w-full md:flex-1">SEARCH</button>
             </div>
         </div>
@@ -96,8 +101,9 @@ const Main = () => {
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
-                     {stores.map((store, index) => (
-                        <div key={index} className="bg-white p-4 rounded-lg shadow flex items-center justify-between"  onClick={() => handleStoreClick(store.position)}>
+                     {filteredStores.map((store, index) => (
+                        <div key={index} className={`bg-white p-4 rounded-lg shadow flex items-center justify-between cursor-pointer hover:bg-blue-100 ${selectedStoreIndex === index ? 'bg-blue-200' : 'hover:bg-blue-100'}`}  
+                        onClick={() => handleStoreClick(store.position,index)}>
                              <div>
                                  <h3 className="font-semibold">{store.name}</h3>
                                  <p className="text-sm">{store.address}</p>
