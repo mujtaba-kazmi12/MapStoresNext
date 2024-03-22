@@ -1,16 +1,10 @@
 'use client'
-import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-
-
-
-
-
+import React, { useEffect, useState } from 'react';
 
 const Main = () => {
+  const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
   const stores = [
     { name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
     { name: 'Store of hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
@@ -21,12 +15,22 @@ const Main = () => {
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
     { name: 'Roman Hardware', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM' },
 ];
-const customMarkerIcon = L.icon({
-  iconUrl: '/red.png',
-  iconSize: [40, 41],
-  iconAnchor: [15, 41],
-  popupAnchor: [1, -34]
-});;
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    // Ensure Leaflet is imported client-side
+    const L = require('leaflet');
+    const icon = L.icon({
+      iconUrl: '/red.png',
+      iconSize: [40, 41],
+      iconAnchor: [15, 41],
+      popupAnchor: [1, -34],
+    });
+    setCustomMarkerIcon(icon);
+  }
+}, []);
+
+// Render null or a loading state until the component is mounted on the client
+if (!customMarkerIcon) return null;
 
 const position = [41.9028, 12.4964];
   return (
