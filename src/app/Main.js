@@ -6,6 +6,11 @@ import { useMap } from 'react-leaflet';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
+import { collection, getDocs } from 'firebase/firestore'; // Import Firestore functions
+import { db } from './Firebase'; // Make sure this path points to your Firebase config file
+import PlaceIcon from '@mui/icons-material/Place';
+
+
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
   ssr: false,
@@ -23,21 +28,39 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), {
 const Main = () => {
   // State for the custom marker icon
   const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
-  const position = [41.9028, 12.4964]; // Rome, Italy
-  const [mapCenter, setMapCenter] = useState(position);
+  
+  const [mapCenter, setMapCenter] = useState(undefined);
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   console.log(selectedStoreId)
   // Example store data
-  const stores = [
-    { id: 1, name: 'Hardware & Co', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [41.9028, 12.4964] },
-    { id: 2, name: 'New store', address: 'VIA TAL DEI TALI 69, 00100 - ROME', distance: '3.5 KM', position: [47.9048, 12.4966] },
-    
-    // Add more stores as needed
-  ];
+ 
+  const [stores, setStores] = useState([]);
 
   // Default map position (latitude, longitude)
- 
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'stores'));
+        const storeData = querySnapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setStores(storeData);
+        if (storeData.length > 0) {
+          // If stores are found, set the map center to the position of the first store
+          setMapCenter(storeData[0].position);
+          setSelectedStoreId(storeData[0].id); // Optionally select the first store
+        }
+      } catch (error) {
+        console.error('Error fetching stores:', error);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      fetchStores();
+    }
+  }, []);
 
   useEffect(() => {
     // This check ensures that Leaflet is only initialized on the client side
@@ -102,19 +125,23 @@ const Main = () => {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
         
              <div className="order-2 md:order-1">
-             <MapContainer center={mapCenter} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
-             <MapUpdater center={mapCenter} />
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  />
-      {stores.map((store, index) => (
-  <Marker key={index} position={store.position} icon={customMarkerIcon}>
-    <Popup>
-      {store.name}<br />{store.address}
-    </Popup>
-  </Marker>
-))}
-    </MapContainer>
+             {mapCenter ? ( // Only render the MapContainer if mapCenter is defined
+          <MapContainer center={mapCenter} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
+            <MapUpdater center={mapCenter} />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {stores.map((store, index) => (
+              <Marker key={index} position={store.position} icon={customMarkerIcon}>
+                <Popup>
+                  {store.name}<br />{store.address}
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        ) : (
+          <div>Loading map...</div> // Display a loading message or loader while the data is being fetched
+        )}
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
@@ -127,8 +154,7 @@ const Main = () => {
                              </div>
                              <div className="flex items-center">
                                 <i className="fas fa-map-marker-alt text-gray-500"></i>
-                                <span className="ml-2 text-sm">{store.distance}</span>
-                                 <button className="ml-4 bg-gray-200 text-sm px-4 py-2 rounded">INDICATIONS</button>
+                                <PlaceIcon />
                              </div>
                          </div>
                      ))}
