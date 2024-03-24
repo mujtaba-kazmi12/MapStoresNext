@@ -1,24 +1,23 @@
 
 'use client'
 import React, { useState } from 'react';
-import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton, Toolbar, Typography, AppBar } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu'; // Import the Menu (hamburger) icon
 import StoreIcon from '@mui/icons-material/Store';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { blue } from '@mui/material/colors';
-import AddForm from './Addform'
+import AddForm from './Addform';
+import Showdel from './Showdel';
 
-const drawerWidth = 240;
-
-// Placeholder components for demonstration
-const Component1 = () => <div>Component 1 Content</div>;
-const Component2 = () => <div>Component 2 Content</div>;
+const drawerWidth = 300;
 
 const IndexPage = () => {
+    const [mobileOpen, setMobileOpen] = useState(false);
     const [selectedComponent, setSelectedComponent] = useState('Component1');
 
     const components = {
         Component1: <AddForm />,
-        Component2: <Component2 />,
+        Component2: <Showdel />,
         // Add more components here
     };
 
@@ -28,45 +27,83 @@ const IndexPage = () => {
         // Add more items as needed
     ];
 
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
-            <Drawer
-                variant="permanent"
-                sx={{
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                        backgroundColor: blue[800], // Feel free to choose another color
-                        color: "#FFFFFF",
-                    },
-                }}
-            >
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        edge="start"
+                        onClick={handleDrawerToggle}
+                        sx={{ mr: 2, display: { sm: 'none' } }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
                     <Typography variant="h6" noWrap component="div">
                         Store Management
                     </Typography>
                 </Toolbar>
-                <List>
-                    {sidebarItems.map((item, index) => (
-                        <ListItem 
-                            button 
-                            key={index} 
-                            onClick={() => setSelectedComponent(item.component)}
-                            sx={{
-                                '&:hover': {
-                                    backgroundColor: blue[900], // Darken the item on hover
-                                }
-                            }}
-                        >
-                            <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
-                            <ListItemText primary={item.text} />
-                        </ListItem>
-                    ))}
-                </List>
-            </Drawer>
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            </AppBar>
+            <Box
+                component="nav"
+                sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+            >
+                {/* Temporary Drawer for xs screens */}
+                <Drawer
+                    variant="temporary"
+                    open={mobileOpen}
+                    onClose={handleDrawerToggle}
+                    ModalProps={{ keepMounted: true }}
+                    sx={{
+                        display: { xs: 'block', sm: 'none' },
+                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 260, backgroundColor: blue[800] },
+                    }}
+                >
+                    <Toolbar />
+                    <List>
+                        {sidebarItems.map((item, index) => (
+                            <ListItem 
+                                button 
+                                key={index} 
+                                onClick={() => setSelectedComponent(item.component)}
+                            >
+                                <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.text} sx={{ color: 'white' }} />
+                            </ListItem>
+                        ))}
+                    </List>
+                    {/* Drawer content */}
+                </Drawer>
+                {/* Permanent Drawer for sm screens and up */}
+                <Drawer
+                    variant="permanent"
+                    sx={{
+                        display: { xs: 'none', sm: 'block' },
+                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, backgroundColor: blue[800] },
+                    }}
+                    open
+                >
+                    <Toolbar />
+                    <List>
+                        {sidebarItems.map((item, index) => (
+                            <ListItem 
+                                button 
+                                key={index} 
+                                onClick={() => setSelectedComponent(item.component)}
+                            >
+                                <ListItemIcon sx={{ color: 'white' }}>{item.icon}</ListItemIcon>
+                                <ListItemText primary={item.text} sx={{ color: 'white' }} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Drawer>
+            </Box>
+            <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` }, pt: { xs: 7, sm: 8 } }}>
                 {components[selectedComponent]}
             </Box>
         </Box>
@@ -74,4 +111,3 @@ const IndexPage = () => {
 };
 
 export default IndexPage;
-
