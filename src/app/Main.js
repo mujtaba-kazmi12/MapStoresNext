@@ -12,7 +12,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Button } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
-import { OpenStreetMapProvider } from 'leaflet-geosearch';
+
 
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
@@ -27,6 +27,7 @@ const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), {
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), {
   ssr: false,
 });
+
 
 
 const Main = () => {
@@ -45,19 +46,26 @@ const Main = () => {
   const [searchProvider, setSearchProvider] = useState(null);
 
   useEffect(() => {
-    setSearchProvider(new OpenStreetMapProvider());
+    if (typeof window !== 'undefined') { // Making sure it's client-side
+      import('leaflet-geosearch').then((GeoSearch) => {
+        const provider = new GeoSearch.OpenStreetMapProvider();
+        setSearchProvider(provider);
+      }).catch(error => console.error('Failed to load leaflet-geosearch', error));
+    }
   }, []);
   
+
   const handleSearch = async (event) => {
     const query = event.target.value;
-    
     if (searchProvider && query) {
-      // Use the provider to search for the query submitted by the user
-      const results = await searchProvider.search({ query });
-      if (results && results.length > 0) {
-        // Just take the first result here, you could provide a list for the user to choose from
-        const { x, y } = results[0]; // x is longitude, y is latitude
-        setMapCenter([y, x]);
+      try {
+        const results = await searchProvider.search({ query });
+        if (results && results.length > 0) {
+          const { x, y } = results[0]; // x is longitude, y is latitude
+          setMapCenter([y, x]);
+        }
+      } catch (error) {
+        console.error('Error performing search:', error);
       }
     }
   };
