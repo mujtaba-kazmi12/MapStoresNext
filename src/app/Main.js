@@ -12,6 +12,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Button } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
+import { OpenStreetMapProvider } from 'leaflet-geosearch';
 
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
@@ -27,6 +28,7 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), {
   ssr: false,
 });
 
+
 const Main = () => {
   // State for the custom marker icon
   const [customMarkerIcon, setCustomMarkerIcon] = useState(null);
@@ -38,6 +40,29 @@ const Main = () => {
   // Example store data
  
   const [stores, setStores] = useState([]);
+
+
+  const [searchProvider, setSearchProvider] = useState(null);
+
+  useEffect(() => {
+    setSearchProvider(new OpenStreetMapProvider());
+  }, []);
+  
+  const handleSearch = async (event) => {
+    const query = event.target.value;
+    
+    if (searchProvider && query) {
+      // Use the provider to search for the query submitted by the user
+      const results = await searchProvider.search({ query });
+      if (results && results.length > 0) {
+        // Just take the first result here, you could provide a list for the user to choose from
+        const { x, y } = results[0]; // x is longitude, y is latitude
+        setMapCenter([y, x]);
+      }
+    }
+  };
+  
+
 
   // Default map position (latitude, longitude)
   useEffect(() => {
@@ -103,10 +128,11 @@ const Main = () => {
   return (
  
  <div className="min-h-[100vh] sm:w-[90%] md:w-[90%] lg:w-[80%] p-4 md:p-8">
-     <div className="bg-white rounded-lg shadow-lg p-6">
+     <div className="bg-white rounded-lg shadow-lg p-6 relative">
          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
              <h1 className="text-xl md:text-2xl font-semibold mb-4 md:mb-0">Store Locator</h1>
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+         
+  <div className="flex flex-wrap gap-2 w-full md:w-auto">
                  {/* <input className="border p-2 rounded w-full md:flex-1" placeholder="Search by store name" onChange={(e) => setSearchTerm(e.target.value)}/> */}
                  <TextField
   className="w-full md:flex-1"
@@ -125,10 +151,10 @@ const Main = () => {
             </div>
         </div>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-        
-             <div className="order-2 md:order-1">
+ 
+             <div className="order-2 md:order-1 relative">
              {mapCenter ? ( // Only render the MapContainer if mapCenter is defined
-          <MapContainer center={mapCenter} zoom={13} className="h-[50vh] md:h-[70vh] w-full rounded-lg">
+          <MapContainer center={mapCenter} zoom={13} className="h-[50vh] md:h-[65vh] w-full rounded-lg mt-10">
             <MapUpdater center={mapCenter} />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -153,9 +179,34 @@ const Main = () => {
             ))}
          
           </MapContainer>
+          
         ) : (
           <div>Loading map...</div> // Display a loading message or loader while the data is being fetched
         )}
+        <TextField
+            className="absolute top-0 left-0 w-full z-10" // Absolute positioning on top of the map
+            variant="outlined"
+            placeholder="Search location"
+            onChange={handleSearch}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              position: 'absolute', // Position the search bar absolutely to overlay the map
+              top: -30, // Distance from the top of the map container
+              left: 0, // Align to the left of the map container
+              right: 0, // Align to the right of the map container
+              margin: 'auto', // Center the search bar horizontally
+              width: '100%', // Width of the search bar; less than 100% for some padding
+              zIndex: 1000, // Ensure the search bar is above the map
+              
+            }}
+          />
+        
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
