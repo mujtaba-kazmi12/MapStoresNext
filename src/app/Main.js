@@ -12,6 +12,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Button } from '@mui/material';
 import PhoneIcon from '@mui/icons-material/Phone';
+import { IconButton } from '@mui/material';
 
 
 // Dynamically import Leaflet components to ensure they are only loaded client-side
@@ -38,6 +39,9 @@ const Main = () => {
   const [selectedStoreId, setSelectedStoreId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   console.log(selectedStoreId)
+  // Add a state to hold the search query
+const [searchQuery, setSearchQuery] = useState('');
+
   // Example store data
  
   const [stores, setStores] = useState([]);
@@ -55,20 +59,23 @@ const Main = () => {
   }, []);
   
 
-  const handleSearch = async (event) => {
-    const query = event.target.value;
-    if (searchProvider && query) {
+  const handleSearch = async () => {
+    if (searchProvider && searchQuery) {
       try {
-        const results = await searchProvider.search({ query });
+        const results = await searchProvider.search({ query: searchQuery });
         if (results && results.length > 0) {
-          const { x, y } = results[0]; // x is longitude, y is latitude
+          const { x, y } = results[0];
           setMapCenter([y, x]);
+          // Consider setting a zoom level here if needed
         }
       } catch (error) {
         console.error('Error performing search:', error);
       }
     }
   };
+  
+  
+  
   
 
 
@@ -189,31 +196,47 @@ const Main = () => {
           </MapContainer>
           
         ) : (
-          <div>Loading map...</div> // Display a loading message or loader while the data is being fetched
+          <div></div> // Display a loading message or loader while the data is being fetched
         )}
-        <TextField
-            className="absolute top-0 left-0 w-full z-10" // Absolute positioning on top of the map
-            variant="outlined"
-            placeholder="Search location"
-            onChange={handleSearch}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              position: 'absolute', // Position the search bar absolutely to overlay the map
-              top: -30, // Distance from the top of the map container
-              left: 0, // Align to the left of the map container
-              right: 0, // Align to the right of the map container
-              margin: 'auto', // Center the search bar horizontally
-              width: '100%', // Width of the search bar; less than 100% for some padding
-              zIndex: 1000, // Ensure the search bar is above the map
-              
-            }}
-          />
+       
+
+<TextField
+  className="absolute top-0 left-0 w-full z-10"
+  variant="outlined"
+  placeholder="Search location"
+  value={searchQuery} // Use the searchQuery state
+  onChange={(e) => setSearchQuery(e.target.value)}
+  onKeyPress={(e) => {
+    if (e.key === 'Enter') {
+      handleSearch(); // Call handleSearch when Enter is pressed
+      e.preventDefault(); // Prevent form submission
+    }
+  }}
+  InputProps={{
+   
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton
+          onClick={handleSearch} // Trigger search on click
+          edge="end"
+        >
+          <SearchIcon />
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+  sx={{
+    position: 'absolute', // Position the search bar absolutely to overlay the map
+    top: -30, // Distance from the top of the map container
+    left: 0, // Align to the left of the map container
+    right: 0, // Align to the right of the map container
+    margin: 'auto', // Center the search bar horizontally
+    width: '100%', // Width of the search bar; less than 100% for some padding
+    zIndex: 1000, // Ensure the search bar is above the map
+    
+  }}
+/>
+
         
      </div>
              <div className="order-1 md:order-2">
