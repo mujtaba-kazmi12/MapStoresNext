@@ -10,6 +10,12 @@ const StoreForm = () => {
     const [longitude, setLongitude] = useState('');
     const [latitude, setLatitude] = useState('');
     const [formErrors, setFormErrors] = useState({});
+    const [zip, setZip] = useState('');
+    const [city, setCity] = useState('');
+    const [country, setCountry] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [website, setWebsite] = useState('');
 
     const validateForm = () => {
         let errors = {};
@@ -17,6 +23,10 @@ const StoreForm = () => {
         if (!address) errors.address = 'Address is required';
         if (!latitude) errors.latitude = 'Latitude is required';
         if (!longitude) errors.longitude = 'Longitude is required';
+        if (!zip) errors.zip = 'Zip code is required';
+        if (!city) errors.city = 'City is required';
+        if (!country) errors.country = 'Country is required';
+        
         setFormErrors(errors);
 
         return Object.keys(errors).length === 0;
@@ -33,7 +43,13 @@ const StoreForm = () => {
             const newStore = {
                 name,
                 address,
-                position: [parseFloat(latitude), parseFloat(longitude)]
+                zip,
+                city,
+                country,
+                email,
+                phone,
+                website,
+                position: [parseFloat(latitude), parseFloat(longitude)],
             };
 
             await addDoc(collection(db, "stores"), newStore);
@@ -43,6 +59,12 @@ const StoreForm = () => {
             setAddress('');
             setLongitude('');
             setLatitude('');
+            setZip('');
+            setCity('');
+            setCountry('');
+            setEmail('');
+            setPhone('');
+            setWebsite('');
         } catch (error) {
             console.error("Error adding document: ", error);
             alert('Error adding store');
@@ -50,7 +72,7 @@ const StoreForm = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', height: '70vh' }}>
+        <Box sx={{ display: 'flex', height: 'full' }}>
             <CssBaseline />
             <Box
                 component={Paper}
@@ -124,6 +146,63 @@ const StoreForm = () => {
                         error={!!formErrors.longitude}
                         helperText={formErrors.longitude || ''}
                     />
+                     <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Zip"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    error={!!formErrors.zip}
+        helperText={formErrors.zip || ''}
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="City"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    error={!!formErrors.city}
+        helperText={formErrors.city || ''}
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Country"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    error={!!formErrors.country}
+        helperText={formErrors.country || ''}
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Phone Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    label="Website URL"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    
+                />
                      <button
         type="submit"
         className={`w-full mt-3 mb-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 `}

@@ -9,7 +9,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { collection, getDocs } from 'firebase/firestore'; // Import Firestore functions
 import { db } from './Firebase'; // Make sure this path points to your Firebase config file
 import PlaceIcon from '@mui/icons-material/Place';
-
+import LaunchIcon from '@mui/icons-material/Launch';
+import { Button } from '@mui/material';
+import PhoneIcon from '@mui/icons-material/Phone';
 
 // Dynamically import Leaflet components to ensure they are only loaded client-side
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), {
@@ -134,10 +136,22 @@ const Main = () => {
             {stores.map((store, index) => (
               <Marker key={index} position={store.position} icon={customMarkerIcon}>
                 <Popup>
-                  {store.name}<br />{store.address}
+                  
+                  <div
+        dangerouslySetInnerHTML={{ __html: `
+          <strong>${store.name}</strong><br />
+          ${store.address}<br />
+          ${store.phone ? `Phone: ${store.phone}<br /><br />` : ''}
+          ${store.website ? 
+            `<a href="${store.website}" target="_blank" rel="noopener noreferrer" style="background-color: black; color: white; padding: 5px 10px; cursor: pointer; border: none; border-radius: 5px; margin-top: 5px; text-decoration: none;">Visit Website</a>` : 
+            ''
+          }
+        `}}
+      />
                 </Popup>
               </Marker>
             ))}
+         
           </MapContainer>
         ) : (
           <div>Loading map...</div> // Display a loading message or loader while the data is being fetched
@@ -145,19 +159,45 @@ const Main = () => {
      </div>
              <div className="order-1 md:order-2">
                  <div className="h-[40vh] lg:h-[70vh] space-y-4 overflow-y-auto">
-                     {filteredStores.map((store) => (
-                        <div  key={store.id} className={`bg-white p-4 rounded-lg shadow flex items-center justify-between cursor-pointer hover:bg-blue-100 ${selectedStoreId=== store.id ? 'bg-blue-100' : 'hover:bg-blue-100'}`}  
-                        onClick={() => handleStoreClick(store.position,store.id)}>
-                             <div>
-                                 <h3 className="font-semibold">{store.name}</h3>
-                                 <p className="text-sm">{store.address}</p>
-                             </div>
-                             <div className="flex items-center">
-                                <i className="fas fa-map-marker-alt text-gray-500"></i>
-                                <PlaceIcon />
-                             </div>
-                         </div>
-                     ))}
+       {filteredStores.map((store) => (
+  <div key={store.id} className={`bg-white p-4 rounded-lg shadow flex flex-col justify-between cursor-pointer hover:bg-blue-100 ${selectedStoreId === store.id ? 'bg-blue-100' : ''}`} onClick={() => handleStoreClick(store.position,store.id)}>
+    <div className="mb-2">
+      <h3 className="text-xl font-semibold">{store.name}</h3>
+      
+      
+    </div>
+    <div className="flex justify-between items-center">
+    <div className="flex flex-col items-start space-x-2">
+  <div className="flex items-center space-x-2">
+    <PlaceIcon  />
+    <p className="text-sm text-gray-700">{store.address}</p>
+  </div>
+  
+  {store.phone && ( // This line checks if the phone number exists before rendering
+    <div className="flex items-center space-x-2 mt-2">
+      <PhoneIcon style={{ fontSize: '1rem' }} />
+      <p className="text-sm text-gray-600">{store.phone}</p>
+    </div>
+  )}
+</div>
+      
+      {store.website && (
+        <Button 
+          variant="contained" 
+          sx={{ backgroundColor: 'black', '&:hover': { backgroundColor: 'black' } }} 
+          endIcon={<LaunchIcon />} 
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent the store click event
+            window.open(store.website, '_blank', 'noopener,noreferrer');
+          }}
+        >
+          Visit
+        </Button>
+      )}
+    </div>
+  </div>
+))}
                  </div>
             </div>
          </div>

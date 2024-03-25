@@ -16,6 +16,12 @@ const StoreList = () => {
   const [editFormData, setEditFormData] = useState({
     name: '',
     address: '',
+    zip: '',
+    city: '',
+    country: '',
+    email: '',
+    phone: '',
+    website: '',
     position: [0, 0],
   });
 
@@ -42,6 +48,12 @@ const StoreList = () => {
     setEditFormData({
       name: store.name,
       address: store.address,
+      zip: store.zip,
+      city: store.city,
+      country: store.country,
+      email: store.email,
+      phone: store.phone,
+      website: store.website,
       position: store.position,
     });
   };
@@ -55,22 +67,34 @@ const StoreList = () => {
   };
 
   const handleEditSave = async (id) => {
-    await updateDoc(doc(db, "stores", id), {
+    // Prepare the updateData with parsed position values
+    const updateData = {
       ...editFormData,
-      position: [parseFloat(editFormData.position[0]), parseFloat(editFormData.position[1])]
-    });
-
-    const updatedStores = stores.map((store) => {
-      if (store.id === id) {
-        return { ...store, ...editFormData };
-      } else {
-        return store;
-      }
-    });
-
-    setStores(updatedStores);
-    setEditStoreId(null);
+      position: editFormData.position.map(coord => parseFloat(coord) || 0)
+    };
+  
+    try {
+      // Update the document in Firestore
+      await updateDoc(doc(db, "stores", id), updateData);
+  
+      // Update local state to reflect the changes
+      const updatedStores = stores.map((store) => {
+        if (store.id === id) {
+          return { ...store, ...updateData };
+        } else {
+          return store;
+        }
+      });
+  
+      setStores(updatedStores);
+      setEditStoreId(null); // Reset the editing state
+      alert('Store updated successfully');
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      alert('Error updating store');
+    }
   };
+  
 
   return (
     <Box sx={{ p: 3 }}>
@@ -84,17 +108,30 @@ const StoreList = () => {
                   <TextField name="address" label="Address" value={editFormData.address} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
                   <TextField name="position" label="Latitude" value={editFormData.position[0]} onChange={(e) => setEditFormData({ ...editFormData, position: [e.target.value, editFormData.position[1]] })} fullWidth sx={{ mb: 1 }}/>
                   <TextField name="position" label="Longitude" value={editFormData.position[1]} onChange={(e) => setEditFormData({ ...editFormData, position: [editFormData.position[0], e.target.value] })} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="zip" label="Zip" value={editFormData.zip} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="city" label="City" value={editFormData.city} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="country" label="Country" value={editFormData.country} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="email" label="Email" value={editFormData.email} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="phone" label="Phone Number" value={editFormData.phone} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
+                  <TextField name="website" label="Website URL" value={editFormData.website} onChange={handleEditChange} fullWidth sx={{ mb: 1 }}/>
                   <Button onClick={() => handleEditSave(store.id)}>Save</Button>
                 </>
               ) : (
                 <>
-                  <h2 className="text-xl font-semibold mb-2">{store.name}</h2>
-                  <p className="text-gray-700">{store.address}</p>
-                  <div className="mt-3">
-                    <p className="text-gray-600">Latitude: {store.position[0]}</p>
-                    <p className="text-gray-600">Longitude: {store.position[1]}</p>
-                  </div>
-                </>
+  <h2 className="text-xl font-semibold mb-2">{store.name}</h2>
+  <p className="text-gray-700">{store.address}</p>
+  <p className="text-gray-600">Zip: {store.zip}</p>
+  <p className="text-gray-600">City: {store.city}</p>
+  <p className="text-gray-600">Country: {store.country}</p>
+  <p className="text-gray-600">Email: {store.email}</p>
+  <p className="text-gray-600">Phone: {store.phone}</p>
+  <p className="text-gray-600">Website: <a href={store.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">{store.website}</a></p>
+  <div className="mt-3">
+    <p className="text-gray-600">Latitude: {store.position[0]}</p>
+    <p className="text-gray-600">Longitude: {store.position[1]}</p>
+  </div>
+</>
+
               )}
             </div>
            
